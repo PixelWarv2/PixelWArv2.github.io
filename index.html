@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PIXEL WAR IDF | CORE V4.0</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        :root { --neon-blue: #0abde3; --neon-red: #ee5253; --neon-orange: #ff9f43; --bg-dark: #050505; --panel-bg: rgba(10, 10, 10, 0.98); }
+        body { margin: 0; background: var(--bg-dark); color: #fff; font-family: 'Press Start 2P', cursive; overflow: hidden; font-size: 11px; touch-action: none; }
+        canvas { display: block; image-rendering: pixelated; cursor: grab; }
+        #sidebar { position: absolute; right: 0; top: 0; width: 260px; height: 100vh; background: #000; border-left: 6px solid var(--neon-blue); display: flex; flex-direction: column; padding: 20px; gap: 12px; z-index: 1000; }
+        .btn-huge { background: #111; border: 4px solid #fff; color: #fff; padding: 22px 10px; cursor: pointer; font-family: inherit; font-size: 9px; transition: all 0.2s; line-height: 1.4; text-transform: uppercase; text-align: center; }
+        .btn-huge:hover { background: #fff; color: #000; transform: translateX(-8px); }
+        .btn-huge.active-mode { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+        .section-label { font-size: 8px; color: var(--neon-blue); margin-top: 15px; text-align: center; border-bottom: 2px solid #222; padding-bottom: 5px; }
+        .panel { position: absolute; right: 290px; top: 5vh; width: 600px; height: 85vh; background: var(--panel-bg); border: 5px solid var(--neon-blue); padding: 40px; box-shadow: -20px 20px 0px rgba(0, 0, 0, 0.7); display: none; z-index: 1100; overflow-y: auto; }
+        .panel.active { display: block; animation: panelPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes panelPop { from { opacity: 0; transform: scale(0.8) translateX(100px); } to { opacity: 1; transform: scale(1) translateX(0); } }
+        .chat-box { height: 250px; border: 2px solid #333; overflow-y: auto; background: #000; padding: 10px; margin: 15px 0; font-size: 8px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { border-left: 3px solid var(--neon-blue); padding-left: 8px; line-height: 1.4; text-align: left; }
+        .guild-card { border: 2px solid #333; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); }
+        input { background: #000; border: 3px solid #444; color: #fff; padding: 15px; font-family: inherit; width: calc(100% - 36px); margin-bottom: 15px; font-size: 9px; }
+        #palette { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: 1fr; gap: 10px; background: rgba(0,0,0,0.8); padding: 15px; border: 3px solid #fff; }
+        .color-dot { width: 35px; height: 35px; border: 3px solid #000; cursor: pointer; }
+        .color-dot.active { transform: scale(1.3); border-color: #fff; box-shadow: 0 0 15px #fff; }
+        .member-line { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 8px 0; font-size: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div style="text-align:center; padding: 10px; color: var(--neon-blue); font-size:12px;">CORE_V4.0</div>
+    <button id="m-move" class="btn-huge active-mode" onclick="setMode('move')">🖐️ GLISSER</button>
+    <button id="m-place" class="btn-huge" onclick="setMode('place')">✏️ PLACER</button>
+    <button id="m-vision" class="btn-huge" style="border-color:var(--neon-orange);" onclick="setMode('vision')">👁️ VISION</button>
+    <div class="section-label">GUILDES</div>
+    <button class="btn-huge" onclick="toggleP('g-search-p')">🔍 RECHERCHE</button>
+    <button class="btn-huge" onclick="toggleP('my-guild-p')">🛡️ MA GUILDE</button>
+    <button class="btn-huge" onclick="toggleP('guild-p')">➕ CRÉER</button>
+    <div class="section-label">NAVIGATION</div>
+    <button class="btn-huge" onclick="toggleP('lb-p')">🏆 CLASSEMENT</button>
+    <button id="admin-btn" class="btn-huge" style="border-color: var(--neon-orange);" onclick="toggleP('admin-p')">💀 ADMIN PANEL</button>
+    <button class="btn-huge" id="timer-display">SYNC...</button>
+    <button class="btn-huge" style="border-color: var(--neon-red);" onclick="doLogout()">QUITTER</button>
+</div>
+
+<div id="g-search-p" class="panel">
+    <h1>UNITÉS ACTIVES</h1>
+    <div id="guilds-list">Chargement...</div>
+</div>
+
+<div id="my-guild-p" class="panel">
+    <h1 id="my-g-title">CHARGEMENT...</h1>
+    <div style="color: var(--neon-blue); font-size: 8px; margin-bottom: 5px;">[ EFFECTIFS UNITÉ ]</div>
+    <div id="my-g-members" style="margin-bottom: 20px; background: #111; padding: 10px; border: 1px solid #333;"></div>
+    <div class="chat-box" id="chat-display"></div>
+    <input type="text" id="chat-input" placeholder="MESSAGE UNITÉ..." onkeydown="if(event.key==='Enter') sendGuildMsg()">
+    <button class="btn-huge" style="width:100%" onclick="sendGuildMsg()">TRANSMETTRE</button>
+</div>
+
+<div id="guild-p" class="panel">
+    <h1 id="my-g-title">UNITÉ GUILDE</h1>
+    <div id="my-g-members" style="margin-bottom:20px;"></div> <div id="chat-display" style="height:200px; overflow-y:auto; background:#000; border:1px solid #333; padding:10px; margin-bottom:10px;"></div>
+    
+    <input type="text" id="chat-input" placeholder="MESSAGE UNITÉ...">
+    <button class="btn-huge" style="width:100%" onclick="sendGuildMsg()">TRANSMETTRE</button>
+</div>
+
+<div id="lb-p" class="panel"><h1>CLASSEMENT</h1><div id="lb-list"></div></div>
+
+<div id="admin-p" class="panel">
+    <h1 style="color:var(--neon-orange)">CONTROL CENTER</h1>
+    <div id="admin-players-list"></div>
+    <input type="number" id="rx" placeholder="X"> <input type="number" id="ry" placeholder="Y">
+    <input type="number" id="rw" placeholder="W"> <input type="number" id="rh" placeholder="H">
+    <input type="number" id="rc" placeholder="COLOR (0-9)">
+    <button class="btn-huge" style="width:100%" onclick="adminRect()">EXECUTE INJECTION</button>
+</div>
+
+<div id="login-p" class="panel" style="display: block; right: 50%; transform: translateX(50%); height: auto; top: 20%;">
+    <h1>IDENTIFICATION</h1>
+    <input type="text" id="u-in" placeholder="USER_ID">
+    <input type="password" id="p-in" placeholder="ACCESS_CODE">
+    <button class="btn-huge" style="width:100%" onclick="doLogin()">CONNECTER</button>
+</div>
+
+<div id="palette"></div>
+<canvas id="canvas"></canvas>
+
+<script>
+    const API = "https://pixelwaridf.pythonanywhere.com";
+    let user = localStorage.getItem('pw_user');
+    let gridW = 100, pixelData = "", scale = 20, offX = 100, offY = 100;
+    let selectedColor = 1, cooldown = 0, currentMode = 'move';
+    const colors = ["#FFFFFF","#000000","#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF","#FF00FF","#FFA500","#808080"];
+    
+    const cvs = document.getElementById('canvas'), ctx = cvs.getContext('2d');
+
+    // Cacher le panel admin par défaut
+    document.getElementById('admin-btn').style.display = 'none';
+
+    if(user) {
+        document.getElementById('login-p').style.display = 'none';
+        checkAdminStatus(); // Vérification au chargement
+    }
+
+    async function checkAdminStatus() {
+        if(!user) return;
+        try {
+            const r = await fetch(`${API}/api/is_admin/${user}`);
+            const data = await r.json();
+            document.getElementById('admin-btn').style.display = data.isAdmin ? 'block' : 'none';
+        } catch(e) { console.error("Erreur check admin"); }
+    }
+
+    function setMode(m) {
+        currentMode = m;
+        document.querySelectorAll('#m-move, #m-place, #m-vision').forEach(b => b.classList.remove('active-mode'));
+        const targetBtn = document.getElementById('m-' + m);
+        if(targetBtn) targetBtn.classList.add('active-mode');
+    }
+
+    async function loadLB() {
+        try {
+            const res = await fetch(`${API}/api/leaderboard`);
+            const data = await res.json();
+            document.getElementById('lb-list').innerHTML = data.map((p, i) => 
+                `<div class="player-line" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222;">
+                    <span style="flex: 1;">${i+1}. ${p.name} ${p.guild && p.guild !== "Aucune" ? `<small style="color:var(--neon-orange); font-size:7px;">[${p.guild}]</small>` : ''}</span>
+                    <b style="color: var(--neon-blue); margin-left: 20px;">${p.count} PX</b>
+                </div>`
+            ).join('');
+        } catch(e) { 
+            console.error(e);
+            document.getElementById('lb-list').innerText = "Erreur de chargement du classement"; 
+        }
+    }
+
+    async function loadAdminPlayers() {
+        try {
+            const res = await fetch(`${API}/api/leaderboard`);
+            const data = await res.json();
+            document.getElementById('admin-players-list').innerHTML = data.map(p => `
+                <div class="player-line">
+                    <span>${p.name}</span>
+                    <div>
+                        <button class="admin-btn-small" style="background:orange" onclick="adminAction('${p.name}', 'timeout')">MUTE</button>
+                        <button class="admin-btn-small" onclick="adminAction('${p.name}', 'ban')">BAN</button>
+                    </div>
+                </div>`).join('');
+        } catch(e) { document.getElementById('admin-players-list').innerText = "Erreur Admin"; }
+    }
+
+    async function adminAction(target, type) {
+        let val = type === 'timeout' ? prompt("Minutes ?", "60") : null;
+        const res = await fetch(`${API}/api/admin/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({admin_id: user, target: target, action: type, duration: val})
+        });
+        const r = await res.json();
+        alert(r.success ? "Succès" : "Refusé: " + r.message);
+    }
+
+    async function adminRect() {
+        const data = {
+            admin_id: user, action: 'rect',
+            x: parseInt(document.getElementById('rx').value || 0),
+            y: parseInt(document.getElementById('ry').value || 0),
+            w: parseInt(document.getElementById('rw').value || 1),
+            h: parseInt(document.getElementById('rh').value || 1),
+            color: document.getElementById('rc').value || "0"
+        };
+        const res = await fetch(`${API}/api/admin/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+        });
+        const r = await res.json();
+        alert(r.success ? "Injection OK" : "Erreur");
+    }
+
+    async function createGuild() {
+        const name = document.getElementById('g-name-in').value;
+        const res = await fetch(`${API}/api/guild/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({username: user, action: 'create', name: name})
+        });
+        const r = await res.json();
+        const msg = document.getElementById('g-msg');
+        msg.innerText = r.message;
+        msg.style.color = r.success ? "cyan" : "red";
+    }
+
+    async function updateMyGuild() {
+        try {
+            const stats = await fetch(`${API}/api/stats/${user}`).then(r => r.json());
+            if (!stats.guild || stats.guild === "Aucune") return;
+
+            document.getElementById('my-g-title').innerText = stats.guild;
+
+            // 1. Membres de la guilde
+            const allPlayers = await fetch(`${API}/api/leaderboard`).then(r => r.json());
+            const members = allPlayers.filter(p => p.guild === stats.guild);
+            document.getElementById('my-g-members').innerHTML = members.map(m => `
+                <div class="player-line"><span>> ${m.name}</span><b>${m.count} PX</b></div>
+            `).join('');
+
+            // 2. RÉCUPÉRATION DU CHAT (Utilise ta route existante)
+            const chatRes = await fetch(`${API}/api/guild/chat?username=${user}`);
+            const chatData = await chatRes.json();
+            
+            const chatDisplay = document.getElementById('chat-display');
+            if (chatDisplay && Array.isArray(chatData)) {
+                chatDisplay.innerHTML = chatData.map(m => `
+                    <div class="chat-msg" style="border-left:2px solid var(--neon-blue); padding-left:5px; margin-bottom:8px;">
+                        <b style="font-size:7px; color:var(--neon-orange);">${m.user}:</b><br>
+                        <span style="font-size:9px;">${m.msg}</span>
+                    </div>
+                `).join('');
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+        } catch (e) { console.error("Erreur Sync Guilde:", e); }
+    }
+
+
+    function toggleP(id) {
+        const p = document.getElementById(id);
+        const isActive = p.classList.contains('active');
+        document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+        if(!isActive) {
+            p.classList.add('active');
+            if(id === 'lb-p') loadLB();
+            if(id === 'admin-p') loadAdminPlayers();
+            if(id === 'g-search-p') loadGuilds(); // <--- AJOUTE CETTE LIGNE
+            if(id === 'guild-p') updateMyGuild(); // <--- CHARGE LES INFOS DÈS L'OUVERTURE
+        }
+    }
+
+    // --- INITIALISATION CANVAS ---
+    const pal = document.getElementById('palette');
+    colors.forEach((c, i) => {
+        let d = document.createElement('div');
+        d.className = 'color-dot' + (i === selectedColor ? ' active' : '');
+        d.style.background = c;
+        d.onclick = () => {
+            selectedColor = i;
+            document.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
+            d.classList.add('active');
+        };
+        pal.appendChild(d);
+    });
+
+    let isDragging = false, lastX, lastY, hasMoved = false;
+    cvs.onmousedown = (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; hasMoved = false; };
+    window.onmousemove = (e) => { if(isDragging) { offX += e.clientX - lastX; offY += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; hasMoved = true; draw(); } };
+    window.onmouseup = (e) => { isDragging = false; if(!hasMoved) handleTap(e.clientX, e.clientY); };
+
+    async function handleTap(cx, cy) {
+        const x = Math.floor((cx - offX) / scale), y = Math.floor((cy - offY) / scale);
+        if(x < 0 || x >= 100 || y < 0 || y >= 100) return;
+        if(currentMode === 'place' && cooldown <= 0) {
+            const r = await fetch(`${API}/api/place_pixel`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username:user, index: y*100+x, color:selectedColor})
+            }).then(res=>res.json());
+            if(r.success) { cooldown = 300; sync(); } else alert(r.message);
+        }
+    }
+
+    async function sync() { 
+        try { 
+            const r = await fetch(`${API}/api/grid_data`); 
+            pixelData = await r.text(); 
+            draw(); 
+        } catch(e){} 
+    }
+
+    function draw() {
+        cvs.width = window.innerWidth; cvs.height = window.innerHeight;
+        ctx.fillStyle = "#050505"; ctx.fillRect(0,0,cvs.width,cvs.height);
+        if(!pixelData) return;
+        for(let i=0; i<pixelData.length; i++) {
+            ctx.fillStyle = colors[parseInt(pixelData[i])];
+            ctx.fillRect(offX + (i%100)*scale, offY + Math.floor(i/100)*scale, scale, scale);
+        }
+    }
+    async function sendGuildMsg() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        try {
+            const res = await fetch(`${API}/api/guild/chat`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: user,
+                    msg: msg
+                })
+            });
+            const r = await res.json();
+            if (r.success) {
+                input.value = "";
+                updateMyGuild(); // Rafraîchit instantanément le chat
+            }
+        } catch (e) { alert("Erreur d'envoi"); }
+    }
+    async function loadGuilds() {
+        const listDiv = document.getElementById('guilds-list'); // Assure-toi d'avoir cet ID dans ton HTML
+        if (!listDiv) return;
+        
+        try {
+            const res = await fetch(`${API}/api/guilds/list`);
+            const data = await res.json();
+            listDiv.innerHTML = data.map(g => `
+                <div class="guild-card" style="border:1px solid #333; padding:10px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between">
+                        <span>${g.name}</span>
+                        <b style="color:var(--neon-blue)">${g.total_pixels} PX</b>
+                    </div>
+                    <button class="btn-huge" style="width:100%; padding:5px; margin-top:10px; height:auto;" onclick="joinGuild('${g.name}')">REJOINDRE</button>
+                </div>`).join('');
+        } catch(e) { 
+            listDiv.innerText = "Erreur de chargement des unités."; 
+        }
+    }
+
+    async function joinGuild(gn) {
+        // Route à ajouter si tu veux permettre de rejoindre
+        const r = await fetch(`${API}/api/guild/join`, {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({username:user, guild_name:gn})
+        }).then(r=>r.json());
+        alert(r.message || "Action effectuée");
+        location.reload();
+    }
+    async function doLogin() {
+        const username = document.getElementById('u-in').value;
+        const password = document.getElementById('p-in').value;
+        const r = await fetch(`${API}/api/login`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({username, password})
+        }).then(res=>res.json());
+        if(r.success) { localStorage.setItem('pw_user', r.username); location.reload(); } else alert(r.message);
+    }
+
+    function doLogout() { localStorage.removeItem('pw_user'); location.reload(); }
+
+    setInterval(sync, 4000);
+    setInterval(() => {
+        const t = document.getElementById('timer-display');
+        if(cooldown > 0) {
+            cooldown--;
+            t.innerText = Math.floor(cooldown/60) + ":" + (cooldown%60).toString().padStart(2, '0');
+        } else { t.innerText = "PRÊT"; }
+    }, 1000);
+    sync();
+</script>
+</body>
+</html>
