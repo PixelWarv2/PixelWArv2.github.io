@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PIXEL WAR IDF | CORE V4.0</title>
+    <title>PIXEL WAR | Par M.G</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         :root { --neon-blue: #0abde3; --neon-red: #ee5253; --neon-orange: #ff9f43; --bg-dark: #050505; --panel-bg: rgba(10, 10, 10, 0.98); }
@@ -40,7 +40,7 @@
     <button class="btn-huge" onclick="toggleP('guild-p')">➕ CRÉER</button>
     <div class="section-label">NAVIGATION</div>
     <button class="btn-huge" onclick="toggleP('lb-p')">🏆 CLASSEMENT</button>
-    <button id="admin-btn" class="btn-huge" style="border-color: var(--neon-orange);" onclick="toggleP('admin-p')">💀 ADMIN PANEL</button>
+    <button id="admin-btn" class="btn-huge" style="border-color: var(--neon-orange);" onclick="toggleP('admin-p')">ADMIN PANEL</button>
     <button class="btn-huge" id="timer-display">SYNC...</button>
     <button class="btn-huge" style="border-color: var(--neon-red);" onclick="doLogout()">QUITTER</button>
 </div>
@@ -79,10 +79,10 @@
 </div>
 
 <div id="login-p" class="panel" style="display: block; right: 50%; transform: translateX(50%); height: auto; top: 20%;">
-    <h1>IDENTIFICATION</h1>
+    <h1>Conexion / Creer un Compte</h1>
     <input type="text" id="u-in" placeholder="USER_ID">
     <input type="password" id="p-in" placeholder="ACCESS_CODE">
-    <button class="btn-huge" style="width:100%" onclick="doLogin()">CONNECTER</button>
+    <button class="btn-huge" style="width:100%" onclick="doLogin()">Done</button>
 </div>
 
 <div id="palette"></div>
@@ -358,4 +358,5 @@
     sync();
 </script>
 </body>
+
 </html>
