@@ -1,802 +1,556 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <title>Tracs Studio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta content="width=device-width, initial-scale=1" name="viewport" />
-
-    <link href="https://db.onlinewebfonts.com/c/5145bcd43606e13773af6ed109bba0eb?family=Joystix+Monospace" rel="stylesheet" />
-    <link rel="icon" href="Tracs_Studio_Icon.png" type="image/png">
-
+    <meta charset="UTF-8">
+    <!-- Autorise le zoom et un viewport classique mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PIXEL WAR | Par M.G</title>
     <style>
-        @import url(https://db.onlinewebfonts.com/c/5145bcd43606e13773af6ed109bba0eb?family=Joystix+Monospace);
-        @font-face {
-            font-family: "Joystix Monospace";
-            src: url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.eot");
-            src: url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.eot?#iefix") format("embedded-opentype"),
-                 url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.woff2") format("woff2"),
-                 url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.woff") format("woff"),
-                 url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.ttf") format("truetype"),
-                 url("https://db.onlinewebfonts.com/t/5145bcd43606e13773af6ed109bba0eb.svg#Joystix Monospace") format("svg");
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-        /* RESET + BASE */
-        * {
-            box-sizing: border-box;
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            max-width: 100%;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        body::-webkit-scrollbar {
-            width: 0.4em;
-            border-radius: 100px;
-        }
-
-        body::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
-
-        body::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 15px;
+        :root {
+            --neon-blue: #0abde3;
+            --neon-red: #ee5253;
+            --neon-orange: #ff9f43;
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.98);
         }
 
         body {
-            font-family: "Joystix Monospace";
-            background-color: #0C0C0C;
-            color: #f1f1f1;
+            margin: 0;
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            /* permet le scroll + les gestes tactiles classiques */
+            overflow: auto;
+            font-size: 11px;
+            touch-action: manipulation;
         }
 
-        a {
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: none;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
+        canvas {
             display: block;
+            image-rendering: pixelated;
+            cursor: grab;
         }
 
-        /* CONTENEUR GLOBAL */
-        .main-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 10px;
-        }
+        /* ----- LAYOUT DESKTOP PAR DÉFAUT ----- */
 
-        /* SCROLL TOP BUTTON */
-        #scrollTopButton {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #f8315b;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 2em;
-            cursor: pointer;
-            z-index: 1000;
-        }
-
-        /* SECTION TITLES */
-        .title {
-            text-align: center;
-            padding: 30px 0 10px 0;
-            font-size: 24px;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            margin-top: -10px;
-            margin-bottom: 20px;
-            color: #888;
-            font-size: 14px;
-        }
-
-        /* HEADER */
-        .header {
-            position: fixed;
-            width: 100%;
+        #sidebar {
+            position: absolute;
+            right: 0;
             top: 0;
-            left: 0;
-            background-color: rgba(12, 12, 12, 0.95);
-            z-index: 999;
-            border-bottom: 1px solid #202020;
-        }
-
-        .header-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 10px 10px;
+            width: 260px;
+            height: 100vh;
+            background: #000;
+            border-left: 6px solid var(--neon-blue);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
+            flex-direction: column;
+            padding: 20px;
+            gap: 12px;
+            z-index: 1000;
+            box-sizing: border-box;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .player-icon {
-            width: 48px;
-            height: 48px;
-        }
-
-        .player-info {
-            line-height: 1.3;
-        }
-
-        .studio-name {
-            font-size: 16px;
-        }
-
-        .studio-sub {
-            font-size: 10px;
-            color: #cccccc;
-        }
-
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .volume-button {
-            height: 40px;
-            border-radius: 23px;
-            border: 1px solid #525252;
-            background: linear-gradient(0deg, #121212, #121212), #1c1c1c;
-            box-shadow: 0px 4px 8.3px rgba(0, 0, 0, 0.48);
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .btn-huge {
+            background: #111;
+            border: 4px solid #fff;
+            color: #fff;
+            padding: 22px 10px;
             cursor: pointer;
-        }
-
-        .volume-button-text {
-            font-size: 10px;
-        }
-
-        .volume-icon {
-            width: 14px;
-            height: 14px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-button {
-            height: 40px;
-            border-radius: 30px;
-            background: linear-gradient(180deg, #ffe435 0%, #f3a212 46.56%, #f42b21 100%);
-            box-shadow: 0px 4px 8.3px rgba(0, 0, 0, 0.48);
-            border: 1px solid #202020;
-            padding: 0 30px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: black;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .header-button-icon {
-            width: 18px;
-            height: 18px;
-        }
-
-        .header-button-text {
-            font-size: 12px;
-        }
-
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-nav-button {
-            height: 40px;
-            border-radius: 30px;
-            border: 1px solid #303030;
-            background-color: #141414;
-            color: #ffffff;
-            padding: 0 16px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .header-nav-icon {
-            width: 12px;
-            height: 12px;
-        }
-
-        /* HERO */
-        .hero {
-            margin-top: 80px;
-            padding: 40px 0 30px 0;
-        }
-
-        .hero-inner {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-
-        .hero-left {
-            flex: 1 1 320px;
-            min-width: 0;
-        }
-
-        .hero-right {
-            flex: 1 1 260px;
-            min-width: 0;
+            font-family: inherit;
+            font-size: 9px;
+            transition: all 0.2s;
+            line-height: 1.4;
+            text-transform: uppercase;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .hero-title {
-            font-size: 18px;
-            margin-bottom: 10px;
+        .btn-huge:hover {
+            background: #fff;
+            color: #000;
+            transform: translateX(-8px);
         }
 
-        .hero-description {
-            font-size: 12px;
-            margin-bottom: 16px;
-            color: #d0d0d0;
+        .btn-huge.active-mode {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
         }
 
-        .hero-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .hero-tag {
-            border-radius: 24px;
-            border: 1px solid #535353;
-            padding: 4px 10px;
-            font-size: 10px;
-            color: #c9c9c9;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background-color: #141414;
-        }
-
-        .hero-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .hero-stat {
-            flex: 1 1 120px;
-            border-radius: 18px;
-            border: 1px solid rgba(151, 71, 255, 0.42);
-            padding: 8px 10px;
-            font-size: 10px;
+        .section-label {
+            font-size: 8px;
+            color: var(--neon-blue);
+            margin-top: 15px;
             text-align: center;
-            background: linear-gradient(180deg, #1a1024 0%, #120c1b 100%);
+            border-bottom: 2px solid #222;
+            padding-bottom: 5px;
         }
 
-        .hero-actions {
+        .panel {
+            position: absolute;
+            right: 290px;
+            top: 5vh;
+            width: 600px;
+            height: 85vh;
+            background: var(--panel-bg);
+            border: 5px solid var(--neon-blue);
+            padding: 40px;
+            box-shadow: -20px 20px 0px rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 1100;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .panel.active {
+            display: block;
+            animation: panelPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes panelPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateX(0);
+            }
+        }
+
+        .chat-box {
+            height: 250px;
+            border: 2px solid #333;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 8px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 8px;
-            margin-bottom: 16px;
         }
 
-        .hero-primary {
-            height: 40px;
-            border-radius: 30px;
-            background: linear-gradient(180deg, #ffe435 0%, #f3a212 46.56%, #f42b21 100%);
-            border: 1px solid #202020;
-            padding: 0 18px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: black;
-            cursor: pointer;
+        .chat-msg {
+            border-left: 3px solid var(--neon-blue);
+            padding-left: 8px;
+            line-height: 1.4;
+            text-align: left;
         }
 
-        .hero-secondary {
-            height: 40px;
-            border-radius: 30px;
-            border: 1px solid #444;
-            background-color: #141414;
-            padding: 0 18px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #ffffff;
-            cursor: pointer;
+        .guild-card {
+            border: 2px solid #333;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
         }
 
-        .hero-secondary img {
-            width: 18px;
-            height: 18px;
-        }
-
-        .hero-note {
-            font-size: 10px;
-            color: #888;
-        }
-
-        .hero-phone {
-            max-width: 260px;
-            margin: 0 auto;
-        }
-
-        /* AVANTAGES / BLOC PRINCIPAUX */
-        .section {
-            padding: 30px 0;
-        }
-
-        .cards-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .card {
-            flex: 1 1 250px;
-            border-radius: 18px;
-            border: 1px solid #303030;
-            background-color: #151515;
-            padding: 14px 14px 16px 14px;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .card-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-        .card-title {
-            font-size: 12px;
-        }
-
-        .card-badge {
-            border-radius: 999px;
-            border: 1px solid #646464;
-            background: linear-gradient(180deg, #111 0%, #222 100%);
-            padding: 3px 8px;
+        input {
+            background: #000;
+            border: 3px solid #444;
+            color: #fff;
+            padding: 15px;
+            font-family: inherit;
+            width: calc(100% - 36px);
+            margin-bottom: 15px;
             font-size: 9px;
-            color: #c9c9c9;
-            margin-left: auto;
+            box-sizing: border-box;
         }
 
-        .card-text {
-            font-size: 10px;
-            color: #d0d0d0;
-            margin-bottom: 10px;
-        }
-
-        .card-tag-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            font-size: 9px;
-            color: #b6b6b6;
-        }
-
-        .card-tag {
-            border-radius: 999px;
-            border: 1px solid #555;
-            padding: 2px 8px;
-        }
-
-        /* LISTE PROJETS / SERVICES */
-        .services-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .service-card {
-            flex: 1 1 260px;
-            border-radius: 18px;
-            border: 1px solid #303030;
-            background-color: #151515;
-            padding: 14px;
-        }
-
-        .service-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .service-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-        .service-title {
-            font-size: 12px;
-        }
-
-        .service-pill {
-            border-radius: 999px;
-            border: 1px solid #646464;
-            background: linear-gradient(180deg, #111 0%, #222 100%);
-            padding: 3px 8px;
-            font-size: 9px;
-            color: #c9c9c9;
-            margin-left: auto;
-        }
-
-        .service-text {
-            font-size: 10px;
-            color: #d0d0d0;
-            margin-bottom: 10px;
-        }
-
-        .service-list {
-            font-size: 10px;
-            margin-left: 16px;
-            margin-bottom: 10px;
-        }
-
-        .service-list li {
-            margin-bottom: 4px;
-        }
-
-        .service-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 10px;
-            color: #a8a8a8;
-        }
-
-        .service-footer span {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .service-footer img {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* NEWS / ACTUS */
-        .news-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .news-card {
-            flex: 1 1 260px;
-            border-radius: 18px;
-            border: 1px solid #303030;
-            background-color: #151515;
-            padding: 14px;
-        }
-
-        .news-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .news-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-        .news-title {
-            font-size: 12px;
-        }
-
-        .news-badge {
-            border-radius: 999px;
-            border: 1px solid #646464;
-            background: linear-gradient(180deg, #111 0%, #222 100%);
-            padding: 3px 8px;
-            font-size: 9px;
-            color: #c9c9c9;
-            margin-left: auto;
-        }
-
-        .news-text {
-            font-size: 10px;
-            color: #d0d0d0;
-            margin-bottom: 8px;
-        }
-
-        .news-footer {
-            font-size: 9px;
-            color: #999;
-        }
-
-        /* FOOTER */
-        footer {
-            border-top: 1px solid #252525;
-            background-color: #101010;
-            padding: 20px 10px 12px 10px;
-            margin-top: 20px;
-        }
-
-        .footer-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .footer-left {
-            display: flex;
-            align-items: center;
+        #palette {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 3px solid #fff;
+            box-sizing: border-box;
         }
 
-        .footer-logo {
-            width: 30px;
-            height: 30px;
+        .color-dot {
+            width: 35px;
+            height: 35px;
+            border: 3px solid #000;
+            cursor: pointer;
         }
 
-        .footer-text {
-            font-size: 10px;
-            color: #a8a8a8;
+        .color-dot.active {
+            transform: scale(1.3);
+            border-color: #fff;
+            box-shadow: 0 0 15px #fff;
         }
 
-        .footer-links {
+        .member-line {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 10px;
+            justify-content: space-between;
+            border-bottom: 1px solid #222;
+            padding: 8px 0;
+            font-size: 8px;
         }
 
-        .footer-link {
-            color: #d0d0d0;
-        }
+        /* ----- VERSION MOBILE / TABLETTE ----- */
 
-        /* MEDIA QUERIES RESPONSIVE */
         @media (max-width: 900px) {
-            .header-inner {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .header-right {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .hero-inner {
-                flex-direction: column;
-            }
-
-            .hero-left,
-            .hero-right {
-                flex: 1 1 100%;
-            }
-
-            .hero {
-                padding-top: 30px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header-inner {
-                padding: 8px 10px;
-            }
-
-            .studio-name {
-                font-size: 14px;
-            }
-
-            .studio-sub {
+            body {
+                overflow: auto;
                 font-size: 9px;
             }
 
-            .header-button {
-                padding: 0 18px;
-                font-size: 11px;
-            }
-
-            .header-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .header-nav-button {
-                font-size: 9px;
-                padding: 0 10px;
-            }
-
-            .hero {
-                margin-top: 90px;
-            }
-
-            .hero-title {
-                font-size: 16px;
-                text-align: center;
-            }
-
-            .hero-description {
-                font-size: 11px;
-                text-align: center;
-            }
-
-            .hero-tags {
-                justify-content: center;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-            }
-
-            .hero-actions {
-                justify-content: center;
-            }
-
-            .title {
-                font-size: 20px;
-            }
-
-            .section-subtitle {
-                font-size: 12px;
-            }
-
-            .cards-row,
-            .services-row,
-            .news-row {
-                flex-direction: column;
-            }
-
-            .card,
-            .service-card,
-            .news-card {
-                flex: 1 1 100%;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-inner {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-left {
+            /* on met tout en colonne : canvas en haut, sidebar en dessous */
+            #sidebar {
+                position: static;
                 width: 100%;
-                justify-content: space-between;
-            }
-
-            .header-right {
-                width: 100%;
-                justify-content: flex-start;
-                flex-wrap: wrap;
-            }
-
-            .hero {
-                margin-top: 100px;
-            }
-
-            .hero-title {
-                font-size: 15px;
-            }
-
-            .hero-description {
-                font-size: 10px;
-            }
-
-            .hero-stat {
-                font-size: 9px;
-            }
-
-            .hero-primary,
-            .hero-secondary {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .footer-inner {
-                gap: 10px;
-            }
-
-            .footer-links {
+                height: auto;
+                border-left: none;
+                border-top: 4px solid var(--neon-blue);
                 flex-direction: column;
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .btn-huge {
+                padding: 14px 8px;
+                font-size: 8px;
+            }
+
+            .section-label {
+                margin-top: 8px;
+            }
+
+            /* panels centrés, largeur fluide */
+            .panel {
+                position: fixed;
+                right: 50%;
+                top: 5vh;
+                transform: translateX(50%);
+                width: 95vw;
+                height: 85vh;
+                padding: 20px;
+                box-shadow: 0 0 0 rgba(0,0,0,0.7);
+            }
+
+            #login-p {
+                top: 10%;
+                height: auto;
+            }
+
+            /* palette rapprochée du bord, un peu plus petite */
+            #palette {
+                left: 10px;
+                top: auto;
+                bottom: 10px;
+                transform: none;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+                padding: 8px;
+            }
+
+            .color-dot {
+                width: 26px;
+                height: 26px;
+                border-width: 2px;
+            }
+
+            /* canvas prend toute la largeur visible */
+            canvas {
+                width: 100vw !important;
+                height: 60vh !important;
             }
         }
     </style>
 </head>
 <body>
-    <button id="scrollTopButton" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">↑</button>
 
-    <header class="header">
-        <div class="header-inner">
-            <div class="header-left">
-                <img src="player.png" class="player-icon" alt="Player">
-                <div class="player-info">
-                    <div class="studio-name">Tracs Studio</div>
-                    <div class="studio-sub">Solutions digitales & bots sur mesure</div>
-                </div>
-                <div class="volume-container">
-                    <button class="volume-button" id="volumeButton">
-                        <img src="volume.png" class="volume-icon" alt="Volume">
-                        <span class="volume-button-text">OFF</span>
-                    </button>
-                </div>
-            </div>
+<div id="sidebar">
+    <div style="text-align:center; padding: 10px; color: var(--neon-blue); font-size:12px;">CORE_V4.0</div>
+    <button id="m-move" class="btn-huge active-mode" onclick="setMode('move')">🖐️ GLISSER</button>
+    <button id="m-place" class="btn-huge" onclick="setMode('place')">✏️ PLACER</button>
+    <button id="m-vision" class="btn-huge" style="border-color:var(--neon-orange);" onclick="setMode('vision')">👁️ VISION</button>
+    <div class="section-label">GUILDES</div>
+    <button class="btn-huge" onclick="toggleP('g-search-p')">🔍 RECHERCHE</button>
+    <button class="btn-huge" onclick="toggleP('my-guild-p')">🛡️ MA GUILDE</button>
+    <button class="btn-huge" onclick="toggleP('guild-p')">➕ CRÉER</button>
+    <div class="section-label">NAVIGATION</div>
+    <button class="btn-huge" onclick="toggleP('lb-p')">🏆 CLASSEMENT</button>
+    <button id="admin-btn" class="btn-huge" style="border-color: var(--neon-orange);" onclick="toggleP('admin-p')">ADMIN PANEL</button>
+    <button class="btn-huge" id="timer-display">SYNC...</button>
+    <button class="btn-huge" style="border-color: var(--neon-red);" onclick="doLogout()">QUITTER</button>
+</div>
 
-            <div class="header-right">
-                <button class="header-button" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'});">
-                    <img src="discord.png" class="header-button-icon" alt="Discord">
-                    <span class="header-button-text">Me contacter</span>
-                </button>
-                <nav class="header-nav">
-                    <button class="header-nav-button" onclick="document.getElementById('projects').scrollIntoView({behavior: 'smooth'});">
-                        <img src="controller.png" class="header-nav-icon" alt="">
-                        <span>Projets</span>
-                    </button>
-                    <button class="header-nav-button" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'});">
-                        <img src="code.png" class="header-nav-icon" alt="">
-                        <span>Services</span>
-                    </button>
-                    <button class="header-nav-button" onclick="document.getElementById('news').scrollIntoView({behavior: 'smooth'});">
-                        <img src="news.png" class="header-nav-icon" alt="">
-                        <span>News</span>
-                    </button>
-                </nav>
-            </div>
-        </div>
-    </header>
+<div id="g-search-p" class="panel">
+    <h1>UNITÉS ACTIVES</h1>
+    <div id="guilds-list">Chargement...</div>
+</div>
 
-    <div class="main-container">
-        <!-- HERO -->
-        <section class="hero">
-            <div class="hero-inner">
-                <div class="hero-left">
-                    <div class="hero-title">Ton développeur polyvalent pour bots & apps</div>
-                
+<div id="my-guild-p" class="panel">
+    <h1 id="my-g-title">CHARGEMENT...</h1>
+    <div style="color: var(--neon-blue); font-size: 8px; margin-bottom: 5px;">[ EFFECTIFS UNITÉ ]</div>
+    <div id="my-g-members" style="margin-bottom: 20px; background: #111; padding: 10px; border: 1px solid #333;"></div>
+    <div class="chat-box" id="chat-display"></div>
+    <input type="text" id="chat-input" placeholder="MESSAGE UNITÉ..." onkeydown="if(event.key==='Enter') sendGuildMsg()">
+    <button class="btn-huge" style="width:100%" onclick="sendGuildMsg()">TRANSMETTRE</button>
+</div>
+
+<div id="guild-p" class="panel">
+    <h1 id="my-g-title">UNITÉ GUILDE</h1>
+    <div id="my-g-members" style="margin-bottom:20px;"></div>
+    <div id="chat-display" style="height:200px; overflow-y:auto; background:#000; border:1px solid #333; padding:10px; margin-bottom:10px;"></div>
+    <input type="text" id="chat-input" placeholder="MESSAGE UNITÉ...">
+    <button class="btn-huge" style="width:100%" onclick="sendGuildMsg()">TRANSMETTRE</button>
+</div>
+
+<div id="lb-p" class="panel">
+    <h1>CLASSEMENT</h1>
+    <div id="lb-list"></div>
+</div>
+
+<div id="admin-p" class="panel">
+    <h1 style="color:var(--neon-orange)">CONTROL CENTER</h1>
+    <div id="admin-players-list"></div>
+    <input type="number" id="rx" placeholder="X">
+    <input type="number" id="ry" placeholder="Y">
+    <input type="number" id="rw" placeholder="W">
+    <input type="number" id="rh" placeholder="H">
+    <input type="number" id="rc" placeholder="COLOR (0-9)">
+    <button class="btn-huge" style="width:100%" onclick="adminRect()">EXECUTE INJECTION</button>
+</div>
+
+<div id="login-p" class="panel" style="display: block; right: 50%; transform: translateX(50%); height: auto; top: 20%;">
+    <h1>Conexion / Creer un Compte</h1>
+    <input type="text" id="u-in" placeholder="USER_ID">
+    <input type="password" id="p-in" placeholder="ACCESS_CODE">
+    <button class="btn-huge" style="width:100%" onclick="doLogin()">Done</button>
+</div>
+
+<div id="palette"></div>
+<canvas id="canvas"></canvas>
+
+<script>
+    const API = "https://pixelwaridf.pythonanywhere.com";
+    let user = localStorage.getItem('pw_user');
+    let gridW = 100, pixelData = "", scale = 20, offX = 100, offY = 100;
+    let selectedColor = 1, cooldown = 0, currentMode = 'move';
+    const colors = ["#FFFFFF","#000000","#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF","#FF00FF","#FFA500","#808080"];
+
+    const cvs = document.getElementById('canvas'), ctx = cvs.getContext('2d');
+
+    // Cacher le panel admin par défaut
+    document.getElementById('admin-btn').style.display = 'none';
+
+    if(user) {
+        document.getElementById('login-p').style.display = 'none';
+        checkAdminStatus(); // Vérification au chargement
+    }
+
+    async function checkAdminStatus() {
+        if(!user) return;
+        try {
+            const r = await fetch(`${API}/api/is_admin/${user}`);
+            const data = await r.json();
+            document.getElementById('admin-btn').style.display = data.isAdmin ? 'block' : 'none';
+        } catch(e) { console.error("Erreur check admin"); }
+    }
+
+    function setMode(m) {
+        currentMode = m;
+        document.querySelectorAll('#m-move, #m-place, #m-vision').forEach(b => b.classList.remove('active-mode'));
+        const targetBtn = document.getElementById('m-' + m);
+        if(targetBtn) targetBtn.classList.add('active-mode');
+    }
+
+    async function loadLB() {
+        try {
+            const res = await fetch(`${API}/api/leaderboard`);
+            const data = await res.json();
+            document.getElementById('lb-list').innerHTML = data.map((p, i) =>
+                `<div class="player-line" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222;">
+                    <span style="flex: 1;">${i+1}. ${p.name} ${p.guild && p.guild !== "Aucune" ? `<small style="color:var(--neon-orange); font-size:7px;">[${p.guild}]</small>` : ''}</span>
+                    <b style="color: var(--neon-blue); margin-left: 20px;">${p.count} PX</b>
+                </div>`
+            ).join('');
+        } catch(e) {
+            console.error(e);
+            document.getElementById('lb-list').innerText = "Erreur de chargement du classement";
+        }
+    }
+
+    async function loadAdminPlayers() {
+        try {
+            const res = await fetch(`${API}/api/leaderboard`);
+            const data = await res.json();
+            document.getElementById('admin-players-list').innerHTML = data.map(p => `
+                <div class="player-line">
+                    <span>${p.name}</span>
+                    <div>
+                        <button class="admin-btn-small" style="background:orange" onclick="adminAction('${p.name}', 'timeout')">MUTE</button>
+                        <button class="admin-btn-small" onclick="adminAction('${p.name}', 'ban')">BAN</button>
+                    </div>
+                </div>`).join('');
+        } catch(e) { document.getElementById('admin-players-list').innerText = "Erreur Admin"; }
+    }
+
+    async function adminAction(target, type) {
+        let val = type === 'timeout' ? prompt("Minutes ?", "60") : null;
+        const res = await fetch(`${API}/api/admin/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({admin_id: user, target: target, action: type, duration: val})
+        });
+        const r = await res.json();
+        alert(r.success ? "Succès" : "Refusé: " + r.message);
+    }
+
+    async function adminRect() {
+        const data = {
+            admin_id: user, action: 'rect',
+            x: parseInt(document.getElementById('rx').value || 0),
+            y: parseInt(document.getElementById('ry').value || 0),
+            w: parseInt(document.getElementById('rw').value || 1),
+            h: parseInt(document.getElementById('rh').value || 1),
+            color: document.getElementById('rc').value || "0"
+        };
+        const res = await fetch(`${API}/api/admin/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+        });
+        const r = await res.json();
+        alert(r.success ? "Injection OK" : "Erreur");
+    }
+
+    async function createGuild() {
+        const name = document.getElementById('g-name-in').value;
+        const res = await fetch(`${API}/api/guild/action`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({username: user, action: 'create', name: name})
+        });
+        const r = await res.json();
+        const msg = document.getElementById('g-msg');
+        msg.innerText = r.message;
+        msg.style.color = r.success ? "cyan" : "red";
+    }
+
+    async function updateMyGuild() {
+        try {
+            const stats = await fetch(`${API}/api/stats/${user}`).then(r => r.json());
+            if (!stats.guild || stats.guild === "Aucune") return;
+
+            document.getElementById('my-g-title').innerText = stats.guild;
+
+            const allPlayers = await fetch(`${API}/api/leaderboard`).then(r => r.json());
+            const members = allPlayers.filter(p => p.guild === stats.guild);
+            document.getElementById('my-g-members').innerHTML = members.map(m => `
+                <div class="player-line"><span>> ${m.name}</span><b>${m.count} PX</b></div>
+            `).join('');
+
+            const chatRes = await fetch(`${API}/api/guild/chat?username=${user}`);
+            const chatData = await chatRes.json();
+
+            const chatDisplay = document.getElementById('chat-display');
+            if (chatDisplay && Array.isArray(chatData)) {
+                chatDisplay.innerHTML = chatData.map(m => `
+                    <div class="chat-msg" style="border-left:2px solid var(--neon-blue); padding-left:5px; margin-bottom:8px;">
+                        <b style="font-size:7px; color:var(--neon-orange);">${m.user}:</b><br>
+                        <span style="font-size:9px;">${m.msg}</span>
+                    </div>
+                `).join('');
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+        } catch (e) { console.error("Erreur Sync Guilde:", e); }
+    }
+
+    function toggleP(id) {
+        const p = document.getElementById(id);
+        const isActive = p.classList.contains('active');
+        document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+        if(!isActive) {
+            p.classList.add('active');
+            if(id === 'lb-p') loadLB();
+            if(id === 'admin-p') loadAdminPlayers();
+            if(id === 'g-search-p') loadGuilds();
+            if(id === 'guild-p') updateMyGuild();
+        }
+    }
+
+    // --- INITIALISATION CANVAS ---
+    const pal = document.getElementById('palette');
+    colors.forEach((c, i) => {
+        let d = document.createElement('div');
+        d.className = 'color-dot' + (i === selectedColor ? ' active' : '');
+        d.style.background = c;
+        d.onclick = () => {
+            selectedColor = i;
+            document.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
+            d.classList.add('active');
+        };
+        pal.appendChild(d);
+    });
+
+    let isDragging = false, lastX, lastY, hasMoved = false;
+    cvs.onmousedown = (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; hasMoved = false; };
+    window.onmousemove = (e) => {
+        if(isDragging) {
+            offX += e.clientX - lastX;
+            offY += e.clientY - lastY;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            hasMoved = true;
+            draw();
+        }
+    };
+    window.onmouseup = (e) => { isDragging = false; if(!hasMoved) handleTap(e.clientX, e.clientY); };
+
+    async function handleTap(cx, cy) {
+        const x = Math.floor((cx - offX) / scale), y = Math.floor((cy - offY) / scale);
+        if(x < 0 || x >= 100 || y < 0 || y >= 100) return;
+        if(currentMode === 'place' && cooldown <= 0) {
+            const r = await fetch(`${API}/api/place_pixel`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username:user, index: y*100+x, color:selectedColor})
+            }).then(res=>res.json());
+            if(r.success) { cooldown = 30; sync(); } else alert(r.message);
+        }
+    }
+
+    async function sync() {
+        try {
+            const r = await fetch(`${API}/api/grid_data`);
+            pixelData = await r.text();
+            draw();
+        } catch(e){}
+    }
+
+    function draw() {
+        cvs.width = window.innerWidth;
+        cvs.height = window.innerHeight;
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0,0,cvs.width,cvs.height);
+        if(!pixelData) return;
+        for(let i=0; i<pixelData.length; i++) {
+            ctx.fillStyle = colors[parseInt(pixelData[i])];
+            ctx.fillRect(offX + (i%100)*scale, offY + Math.floor(i/100)*scale, scale, scale);
+        }
+    }
+
+    async function sendGuildMsg() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        try {
+            const res = await fetch(`${API}/api/guild/chat`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: user,
+                    msg: msg
+                })
+            });
+            const r = await res.json();
+            if (r.success) {
+                input.value = "";
+                updateMyGuild
