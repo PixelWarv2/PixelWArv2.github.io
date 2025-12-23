@@ -263,7 +263,7 @@
                 method:'POST', headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({username:user, index: y*100+x, color:selectedColor})
             }).then(res=>res.json());
-            if(r.success) { cooldown = 300; sync(); } else alert(r.message);
+            if(r.success) { cooldown = 30; sync(); } else alert(r.message);
         }
     }
 
@@ -360,3 +360,4 @@
 </body>
 
 </html>
+
