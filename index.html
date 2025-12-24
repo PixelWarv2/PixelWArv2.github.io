@@ -55,6 +55,7 @@
     <h1 id="my-g-title">CHARGEMENT...</h1>
     <div style="color: var(--neon-blue); font-size: 8px; margin-bottom: 5px;">[ EFFECTIFS UNITÉ ]</div>
     <div id="my-g-members" style="margin-bottom: 20px; background: #111; padding: 10px; border: 1px solid #333;"></div>
+    
     <div class="chat-box" id="chat-display"></div>
     <input type="text" id="chat-input" placeholder="MESSAGE UNITÉ..." onkeydown="if(event.key==='Enter') sendGuildMsg()">
     <button class="btn-huge" style="width:100%" onclick="sendGuildMsg()">TRANSMETTRE</button>
@@ -235,6 +236,7 @@
             if(id === 'admin-p') loadAdminPlayers();
             if(id === 'g-search-p') loadGuilds(); // <--- AJOUTE CETTE LIGNE
             if(id === 'guild-p') updateMyGuild(); // <--- CHARGE LES INFOS DÈS L'OUVERTURE
+            if(id === 'my-guild-p') updateMyGuild();
         }
     }
 
