@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9611622736064565"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
     
@@ -46,6 +44,8 @@
     <button id="admin-btn" class="btn-huge" style="border-color: var(--neon-orange);" onclick="toggleP('admin-p')">ADMIN PANEL</button>
     <button class="btn-huge" id="timer-display">SYNC...</button>
     <button class="btn-huge" style="border-color: var(--neon-red);" onclick="doLogout()">QUITTER</button>
+    <div class="section-label">INFOS</div>
+    <button class="btn-huge" style="border-color: #fff;" onclick="toggleP('rules-p')">📜 RÈGLES / AIDE</button>
 </div>
 
 <div id="g-search-p" class="panel">
@@ -80,6 +80,45 @@
     <input type="number" id="rw" placeholder="W"> <input type="number" id="rh" placeholder="H">
     <input type="number" id="rc" placeholder="COLOR (0-9)">
     <button class="btn-huge" style="width:100%" onclick="adminRect()">EXECUTE INJECTION</button>
+</div>
+<div id="rules-p" class="panel">
+    <h1>GUIDE DE JEU & RÈGLES</h1>
+    
+    <div style="padding: 10px; line-height: 1.6; font-size: 10px;">
+        <h3 style="color: var(--neon-blue); border-bottom: 2px solid #333; padding-bottom: 5px;">🎯 LE BUT DU JEU</h3>
+        <p>
+            Bienvenue sur <strong>PIXEL WAR V4</strong>. Ce projet est une expérience sociale massivement multijoueur inspirée du concept "Place". 
+            Chaque joueur peut poser un pixel de couleur sur une grille commune toutes les 30 secondes.
+            <br><br>
+            L'objectif est de collaborer avec d'autres joueurs pour dessiner des œuvres d'art, des drapeaux ou des symboles, 
+            et de défendre votre territoire contre les autres factions.
+        </p>
+
+        <h3 style="color: var(--neon-orange); border-bottom: 2px solid #333; padding-bottom: 5px; margin-top: 20px;">⚔️ SYSTÈME DE GUILDES</h3>
+        <p>
+            Seul, vous ne pouvez pas faire grand-chose. Rejoignez ou créez une <strong>Guilde</strong> pour coordonner vos attaques.
+            <ul>
+                <li>Utilisez le menu "GUILDES" pour trouver des alliés.</li>
+                <li>Communiquez via le chat privé de votre unité.</li>
+                <li>Grimpez dans le classement "Unités Actives" en posant le plus de pixels possible.</li>
+            </ul>
+        </p>
+
+        <h3 style="color: var(--neon-red); border-bottom: 2px solid #333; padding-bottom: 5px; margin-top: 20px;">⚖️ RÈGLES À RESPECTER</h3>
+        <p>
+            Pour garantir la pérennité du jeu et l'éligibilité du service :
+            <br>
+            <strong>1. Pas de Scripts/Bots :</strong> L'utilisation d'automates pour poser des pixels est strictement interdite et entraîne un bannissement IP.
+            <br>
+            <strong>2. Contenu Approprié :</strong> Tout dessin à caractère haineux, sexuel ou politique extrémiste sera immédiatement effacé par la modération.
+            <br>
+            <strong>3. Fair-play :</strong> Le harcèlement via le chat de guilde est interdit.
+        </p>
+
+        <div style="margin-top: 30px; border: 1px solid #444; padding: 10px; background: #000;">
+            <small>Version du Core: 4.0 | Développé par M.G avec Python/Flask & JS Canvas.</small>
+        </div>
+    </div>
 </div>
 
 <div id="login-p" class="panel" style="display: block; right: 50%; transform: translateX(50%); height: auto; top: 20%;">
@@ -366,7 +405,6 @@
 </body>
 
 </html>
-
 
 
 
