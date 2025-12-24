@@ -307,37 +307,83 @@
         window.onmousemove = (e) => { if(isDragging) { offX += e.clientX - lastX; offY += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; hasMoved = true; draw(); } };
         window.onmouseup = (e) => { isDragging = false; if(!hasMoved) handleTap(e.clientX, e.clientY); };
 
+
         async function handleTap(cx, cy) {
-            const x = Math.floor((cx - offX) / scale), y = Math.floor((cy - offY) / scale);
-            if(x < 0 || x >= 100 || y < 0 || y >= 100) return;
-            if(currentMode === 'place' && cooldown <= 0) {
-                const r = await fetch(`${API}/api/place_pixel`, {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({username:user, index: y*100+x, color:selectedColor})
-                }).then(res=>res.json());
-                if(r.success) { cooldown = 30; sync(); } else alert(r.message);
-            }
-            else if(currentMode === 'vision') {
+            const x = Math.floor((cx - offX) / scale);
+            const y = Math.floor((cy - offY) / scale);
+
+            // Vérifier si on est dans la grille (100x100)
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) return;
             const index = y * 100 + x;
-            const infoDiv = document.getElementById('vision-info');
-            const textDiv = document.getElementById('vision-text');
-            
-            infoDiv.style.display = 'block';
-            textDiv.innerText = "Recherche...";
 
-            try {
-                const res = await fetch(`${API}/api/pixel_info/${index}`);
-                const data = await res.json();
-                textDiv.innerHTML = `AUTEUR: <span style="color:var(--neon-blue)">${data.author}</span><br>POS: ${x},${y}`;
-            } catch(e) {
-                textDiv.innerText = "Erreur lecture";
+            if (currentMode === 'place') {
+                if (cooldown > 0) return alert("Attendez la fin du cooldown !");
+                
+                const res = await fetch(`${API}/api/place_pixel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user,
+                        index: index,
+                        color: selectedColor
+                    })
+                });
+                const r = await res.json();
+                if (r.success) {
+                    cooldown = 30;
+                    sync(); // Rafraîchir la grille immédiatement
+                } else {
+                    alert(r.message);
+                }
+            } 
+            else if (currentMode === 'vision') {
+                const infoDiv = document.getElementById('vision-info');
+                const textDiv = document.getElementById('vision-text');
+                
+                infoDiv.style.display = 'block';
+                textDiv.innerText = "Analyse en cours...";
+
+                try {
+                    const r = await fetch(`${API}/api/pixel_info/${index}`);
+                    const data = await r.json();
+                    textDiv.innerHTML = `Auteur : <b style="color:var(--neon-blue)">${data.author}</b><br>Position : [${x},${y}]`;
+                } catch (e) {
+                    textDiv.innerText = "Erreur d'analyse";
+                }
+                
+                // Cacher l'info après 4 secondes
+                setTimeout(() => { infoDiv.style.display = 'none'; }, 4000);
             }
-
-            // Cache l'info après 4 secondes
-            setTimeout(() => { infoDiv.style.display = 'none'; }, 4000);
         }
-    }
-        
+
+        // Ajoutez cette fonction pour le rendu automatique
+        function draw() {
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+            
+            for (let i = 0; i < 10000; i++) {
+                const x = i % 100;
+                const y = Math.floor(i / 100);
+                ctx.fillStyle = colors[parseInt(pixelData[i]) || 0];
+                ctx.fillRect(offX + x * scale, offY + y * scale, scale - 0.5, scale - 0.5);
+            }
+        }
+
+        async function sync() {
+            const r = await fetch(`${API}/api/grid_data`);
+            pixelData = await r.text();
+            draw();
+        }
+
+        // Ajuster la taille du canvas
+        window.onresize = () => {
+            cvs.width = window.innerWidth;
+            cvs.height = window.innerHeight;
+            draw();
+        };
+        window.onresize();
+        setInterval(sync, 5000);
+                
 
         async function sync() { 
             try { 
